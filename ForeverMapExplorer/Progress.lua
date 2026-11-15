@@ -351,6 +351,13 @@ local function NewBigPlate()
 	p.sign.down:SetSize(2, 8)
 	p.sign.down:SetPoint("CENTER")
 	p.sign.down:SetColorTexture(1, 0.82, 0, 1)
+	-- The game moves each texture to the nearest screen pixel. With bars this
+	-- thin, that made each sign look different. Without the snap, all signs
+	-- have the same proportions.
+	for _, bar in ipairs({ across, p.sign.down, red }) do
+		if bar.SetSnapToPixelGrid then bar:SetSnapToPixelGrid(false) end
+		if bar.SetTexelSnappingBias then bar:SetTexelSnappingBias(0) end
+	end
 	p.desc = p:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	p.desc:SetPoint("TOPLEFT", 102, -40)
 	p.corner = p:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")

@@ -105,6 +105,37 @@ local function UpdateMapButton()
 	mapButton:SetAlpha(on and 1 or 0.6)
 end
 
+-- The positions of the box on the map. The default is the bottom centre:
+-- the top centre has the zone name of the game, and the corners have the
+-- buttons and panels of the game and of other addons.
+local POSITIONS = {
+	bottom = { "BOTTOM", 0, 10 }, top = { "TOP", 0, -8 },
+	topleft = { "TOPLEFT", 8, -8 }, topright = { "TOPRIGHT", -8, -8 },
+	bottomleft = { "BOTTOMLEFT", 8, 10 }, bottomright = { "BOTTOMRIGHT", -8, 10 },
+}
+
+function ns.PlacePanel(where)
+	if where then
+		if not POSITIONS[where] then
+			ns.Print("positions: bottom, top, topleft, topright, bottomleft, bottomright.")
+			return
+		end
+		ns.db.panelAt = where
+		ns.Print("the box on the map is now at: " .. where .. ".")
+	end
+	if not panel then return end
+	local at = POSITIONS[ns.db.panelAt or "bottom"] or POSITIONS.bottom
+	panel:ClearAllPoints()
+	panel:SetPoint(at[1], panel.host, at[1], at[2], at[3])
+	-- The note line goes on the side of the box that is toward the map centre.
+	panel.note:ClearAllPoints()
+	if at[1]:find("BOTTOM") then
+		panel.note:SetPoint("BOTTOM", panel, "TOP", 0, 2)
+	else
+		panel.note:SetPoint("TOP", panel, "BOTTOM", 0, -2)
+	end
+end
+
 local function BuildMapParts()
 	if mapButton or not WorldMapFrame then return end
 	local host = (WorldMapFrame.GetCanvasContainer and WorldMapFrame:GetCanvasContainer()) or WorldMapFrame
@@ -136,12 +167,10 @@ local function BuildMapParts()
 	panel = ns.NewPlate(WorldMapFrame)
 	panel:SetFrameStrata("HIGH")
 	panel:SetWidth(PANEL_WIDTH)
-	-- The top left corner. The game shows the name of the zone below the
-	-- pointer at the top centre, so the box must not be there.
-	panel:SetPoint("TOPLEFT", host, "TOPLEFT", 8, -8)
 	panel:EnableMouse(false)
 	panel.note = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-	panel.note:SetPoint("TOP", panel, "BOTTOM", 0, -2)
+	panel.host = host
+	ns.PlacePanel()
 	panel:Hide()
 
 	WorldMapFrame:HookScript("OnShow", SafeRefreshPanel)
