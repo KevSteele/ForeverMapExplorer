@@ -132,11 +132,13 @@ local function BuildMapParts()
 		GameTooltip:Show()
 	end)
 
-	-- The panel: one plate at the top of the map, in the centre.
+	-- The panel: one plate on the map.
 	panel = ns.NewPlate(WorldMapFrame)
 	panel:SetFrameStrata("HIGH")
 	panel:SetWidth(PANEL_WIDTH)
-	panel:SetPoint("TOP", host, "TOP", 0, -6)
+	-- The top left corner. The game shows the name of the zone below the
+	-- pointer at the top centre, so the box must not be there.
+	panel:SetPoint("TOPLEFT", host, "TOPLEFT", 8, -8)
 	panel:EnableMouse(false)
 	panel.note = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	panel.note:SetPoint("TOP", panel, "BOTTOM", 0, -2)
