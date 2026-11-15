@@ -20,9 +20,10 @@ You must still go into an area to discover it. The game gives the discovery expe
 
 ## The buttons
 
-- The minimap button: a left click opens the progress window. A right click sets the fog to on or off. Drag it to move it.
-- The world map button: a left click shows or hides the progress panel on the map. A right click opens the progress window.
-- The progress panel shows the progress of the map that you look at: a zone, a continent, or Azeroth.
+- The minimap button: a left click opens or closes the progress window. Drag it to move it.
+- The world map button: a left click opens or closes the progress window. A right click shows or hides the fog.
+- The progress box on the map shows the progress of the map that you look at: a zone, a continent, or Azeroth.
+- No button changes the box. Use `/fme box off`, `/fme box on`, or `/fme box <position>` (`bottom`, `top`, `topleft`, `topright`, `bottomleft`, `bottomright`).
 
 ## The progress window
 
