@@ -2,8 +2,9 @@
 WoW Forever Map Explorer - the minimap button, the world map button, and the map panel.
 GPL-3.0-or-later.
 
-- The minimap button opens and closes the progress window.
-- The world map button shows and hides the map panel.
+- The minimap button: a left click opens and closes the progress window.
+- The world map button: a left click opens and closes the progress window,
+  a right click shows and hides the fog on the map.
 - The map panel shows the progress of the map that you look at:
   a zone, a continent, or Azeroth.
 ]]
@@ -98,12 +99,15 @@ local function SafeRefreshPanel()
 	end
 end
 
+ns.RefreshPanel = SafeRefreshPanel
+
 local function UpdateMapButton()
 	if not mapButton then return end
-	local on = ns.db.mapPanel and true or false
+	local on = ns.db.enabled and true or false
 	mapButton.icon:SetDesaturated(not on)
 	mapButton:SetAlpha(on and 1 or 0.6)
 end
+ns.UpdateMapButton = UpdateMapButton
 
 -- The positions of the box on the map. The default is the bottom centre:
 -- the top centre has the zone name of the game, and the corners have the
@@ -115,9 +119,15 @@ local POSITIONS = {
 }
 
 function ns.PlacePanel(where)
+	if where == "on" or where == "off" then
+		ns.db.mapPanel = (where == "on")
+		ns.Print("the box on the map is " .. where .. ".")
+		if ns.RefreshPanel then ns.RefreshPanel() end
+		return
+	end
 	if where then
 		if not POSITIONS[where] then
-			ns.Print("positions: bottom, top, topleft, topright, bottomleft, bottomright.")
+			ns.Print("use: on, off, bottom, top, topleft, topright, bottomleft, bottomright.")
 			return
 		end
 		ns.db.panelAt = where
@@ -145,21 +155,21 @@ local function BuildMapParts()
 	mapButton:SetFrameStrata("HIGH")
 	mapButton:SetPoint("TOPRIGHT", host, "TOPRIGHT", -4, -2 - 32)
 	mapButton:SetScript("OnClick", function(self, button)
-		if button == "RightButton" then
+		if button ~= "RightButton" then
 			ns.ToggleProgress()
 			return
 		end
-		ns.db.mapPanel = not ns.db.mapPanel
+		ns.db.enabled = not ns.db.enabled
+		ns.RefreshFog()
 		UpdateMapButton()
-		SafeRefreshPanel()
 		if GameTooltip:IsOwned(self) then self:GetScript("OnEnter")(self) end
 	end)
 	mapButton:SetScript("OnEnter", function(self)
 		GameTooltip:SetOwner(self, "ANCHOR_LEFT")
 		GameTooltip:AddLine("Map Explorer", 1, 1, 1)
-		GameTooltip:AddLine(ns.db.mapPanel and "The progress panel shows. Left-click to hide it."
-			or "The progress panel is hidden. Left-click to show it.", 0.8, 0.8, 0.8)
-		GameTooltip:AddLine("Right-click: open the progress window.", 0.8, 0.8, 0.8)
+		GameTooltip:AddLine("Left-click: open or close the progress window.", 0.8, 0.8, 0.8)
+		GameTooltip:AddLine(ns.db.enabled and "Right-click: hide the fog on the map."
+			or "Right-click: show the fog on the map.", 0.8, 0.8, 0.8)
 		GameTooltip:Show()
 	end)
 
@@ -206,20 +216,14 @@ local function BuildMinimapButton()
 		end)
 	end)
 	minimapButton:SetScript("OnDragStop", function(self) self:SetScript("OnUpdate", nil) end)
-	minimapButton:SetScript("OnClick", function(_, button)
-		if button == "RightButton" then
-			ns.db.enabled = not ns.db.enabled
-			ns.Print(ns.db.enabled and "the fog on the map is on." or "the fog on the map is off.")
-			ns.RefreshFog()
-		else
-			ns.ToggleProgress()
-		end
+	minimapButton:RegisterForClicks("LeftButtonUp")
+	minimapButton:SetScript("OnClick", function()
+		ns.ToggleProgress()
 	end)
 	minimapButton:SetScript("OnEnter", function(self)
 		GameTooltip:SetOwner(self, "ANCHOR_LEFT")
 		GameTooltip:AddLine("Map Explorer", 1, 1, 1)
 		GameTooltip:AddLine("Left-click: open or close the progress window.", 0.8, 0.8, 0.8)
-		GameTooltip:AddLine("Right-click: set the fog on the map to on or off.", 0.8, 0.8, 0.8)
 		GameTooltip:AddLine("Drag: move this button.", 0.8, 0.8, 0.8)
 		GameTooltip:Show()
 	end)
@@ -235,6 +239,12 @@ end
 
 -- Fog.lua calls this at login, after the settings are ready.
 function ns.OnLogin()
+	-- Before version 0.3.1 the map button could hide the box. No button does
+	-- that now, so show the box again one time. "/fme box off" hides it.
+	if not ns.db.boxReset then
+		ns.db.mapPanel = true
+		ns.db.boxReset = true
+	end
 	pcall(BuildMinimapButton)
 	pcall(BuildMapParts)
 	-- The first look sets the base. A later discovery can then give a zone its date.

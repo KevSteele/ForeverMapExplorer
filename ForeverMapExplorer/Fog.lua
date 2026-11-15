@@ -224,4 +224,5 @@ SlashCmdList.MAPFOG = function(msg)
 		return
 	end
 	SafeRefresh()
+	if ns.UpdateMapButton then ns.UpdateMapButton() end
 end

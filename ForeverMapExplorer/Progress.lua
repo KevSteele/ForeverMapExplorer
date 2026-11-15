@@ -334,30 +334,34 @@ local function NewBigPlate()
 	p.title:SetPoint("TOPLEFT", 80, -14)
 	-- The plus or minus sign: a red box with a gold sign. The sign is drawn from
 	-- two bars, so it is exactly in the centre of the box.
-	p.sign = ns.NewFrame("Frame", p)
-	p.sign:SetSize(16, 16)
-	p.sign:SetPoint("TOPLEFT", 80, -38)
-	ns.Backdrop(p.sign, "Interface\\Tooltips\\UI-Tooltip-Border", 8)
-	if p.sign.SetBackdropBorderColor then p.sign:SetBackdropBorderColor(0.9, 0.7, 0.4) end
-	local red = p.sign:CreateTexture(nil, "BACKGROUND")
-	red:SetPoint("TOPLEFT", 2, -2)
-	red:SetPoint("BOTTOMRIGHT", -2, 2)
-	red:SetColorTexture(0.6, 0.05, 0.05, 1)
-	local across = p.sign:CreateTexture(nil, "OVERLAY")
-	across:SetSize(8, 2)
-	across:SetPoint("CENTER")
-	across:SetColorTexture(1, 0.82, 0, 1)
-	p.sign.down = p.sign:CreateTexture(nil, "OVERLAY")
-	p.sign.down:SetSize(2, 8)
-	p.sign.down:SetPoint("CENTER")
-	p.sign.down:SetColorTexture(1, 0.82, 0, 1)
-	-- The game moves each texture to the nearest screen pixel. With bars this
-	-- thin, that made each sign look different. Without the snap, all signs
-	-- have the same proportions.
-	for _, bar in ipairs({ across, p.sign.down, red }) do
-		if bar.SetSnapToPixelGrid then bar:SetSnapToPixelGrid(false) end
-		if bar.SetTexelSnappingBias then bar:SetTexelSnappingBias(0) end
+	-- Every part has a size and a position in whole screen pixels, measured
+	-- from the top left corner of the box. Thus the game cannot make one bar
+	-- thick and the next bar thin, and all signs are the same.
+	local function Px(n)
+		if PixelUtil and PixelUtil.GetNearestPixelSize then
+			return PixelUtil.GetNearestPixelSize(n, p:GetEffectiveScale(), 1)
+		end
+		return n
 	end
+	local unit = Px(2)                 -- the thickness of a bar, 1 pixel or more
+	local arm = unit * 2               -- the length of a bar on each side of the centre
+	local pad = unit * 2               -- the space from the sign to the edge of the box
+	local size = pad * 2 + arm * 2 + unit
+	p.sign = CreateFrame("Frame", nil, p)
+	p.sign:SetSize(size, size)
+	p.sign:SetPoint("TOPLEFT", 80, -38)
+	local function Part(layer, sub, x, y, w, h, r, g, b)
+		local t = p.sign:CreateTexture(nil, layer, nil, sub)
+		t:SetPoint("TOPLEFT", p.sign, "TOPLEFT", x, -y)
+		t:SetSize(w, h)
+		t:SetColorTexture(r, g, b, 1)
+		return t
+	end
+	Part("BACKGROUND", 0, 0, 0, size, size, 0.95, 0.75, 0.45)                           -- the edge
+	local one = Px(1)
+	Part("BACKGROUND", 1, one, one, size - one * 2, size - one * 2, 0.6, 0.05, 0.05)     -- the red box
+	Part("OVERLAY", 0, pad, pad + arm, arm * 2 + unit, unit, 1, 0.82, 0)                -- the bar across
+	p.sign.down = Part("OVERLAY", 0, pad + arm, pad, unit, arm * 2 + unit, 1, 0.82, 0)  -- the bar down
 	p.desc = p:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	p.desc:SetPoint("TOPLEFT", 102, -40)
 	p.corner = p:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
