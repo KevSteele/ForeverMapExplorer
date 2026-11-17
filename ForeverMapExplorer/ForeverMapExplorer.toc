@@ -1,7 +1,7 @@
 ## Interface: 16001
 ## Title: WoW Forever Map Explorer
 ## Notes: Shows the areas that you did not discover on the world map, and your discovery progress for each zone and continent.
-## Version: 0.3.0
+## Version: 0.4.0
 ## Author: Kevin
 ## SavedVariables: ForeverMapExplorerDB
 ## X-License: GPL-3.0-or-later

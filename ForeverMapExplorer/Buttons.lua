@@ -7,6 +7,8 @@ GPL-3.0-or-later.
   a right click shows and hides the fog on the map.
 - The map panel shows the progress of the map that you look at:
   a zone, a continent, or Azeroth.
+- The coordinates line on the world map shows your position and the
+  position of the cursor.
 ]]
 
 local _, ns = ...
@@ -15,7 +17,7 @@ local ICON = "Interface\\Icons\\INV_Misc_Map02"
 local CIRCLE = "Interface\\CHARACTERFRAME\\TempPortraitAlphaMask"
 local PANEL_WIDTH = 260
 
-local mapButton, panel, minimapButton
+local mapButton, panel, minimapButton, coords
 
 -- A round button in the style of the minimap buttons. Questie and the fishing addon
 -- use the same parts, so the buttons look like a set.
@@ -118,6 +120,18 @@ local POSITIONS = {
 	bottomleft = { "BOTTOMLEFT", 8, 10 }, bottomright = { "BOTTOMRIGHT", -8, 10 },
 }
 
+-- The coordinates line is in the bottom left corner of the map. If the box
+-- is there, the line goes to the bottom right corner.
+local function PlaceCoords()
+	if not coords then return end
+	local right = (ns.db.panelAt == "bottomleft")
+	coords:ClearAllPoints()
+	coords:SetPoint(right and "BOTTOMRIGHT" or "BOTTOMLEFT", coords.host, right and "BOTTOMRIGHT" or "BOTTOMLEFT",
+		right and -8 or 8, 10)
+	coords.text:ClearAllPoints()
+	coords.text:SetPoint(right and "RIGHT" or "LEFT", coords, right and "RIGHT" or "LEFT", right and -6 or 6, 0)
+end
+
 function ns.PlacePanel(where)
 	if where == "on" or where == "off" then
 		ns.db.mapPanel = (where == "on")
@@ -133,6 +147,7 @@ function ns.PlacePanel(where)
 		ns.db.panelAt = where
 		ns.Print("the box on the map is now at: " .. where .. ".")
 	end
+	PlaceCoords()
 	if not panel then return end
 	local at = POSITIONS[ns.db.panelAt or "bottom"] or POSITIONS.bottom
 	panel:ClearAllPoints()
@@ -144,6 +159,98 @@ function ns.PlacePanel(where)
 	else
 		panel.note:SetPoint("TOP", panel, "BOTTOM", 0, -2)
 	end
+end
+
+------------------------------------------------------------------------
+-- The coordinates on the map
+------------------------------------------------------------------------
+
+local function Pair(x, y)
+	return ("%.1f, %.1f"):format(x * 100, y * 100)
+end
+
+-- Your position on the map that the world map shows. Nil if you are not on
+-- that map, or if the game gives no position (for example in a dungeon).
+local function PlayerXY(mapID)
+	if not mapID or not C_Map.GetPlayerMapPosition then return nil end
+	local pos = C_Map.GetPlayerMapPosition(mapID, "player")
+	if not pos then return nil end
+	local x, y = pos:GetXY()
+	if not x or not y or (x == 0 and y == 0) or x < 0 or x > 1 or y < 0 or y > 1 then return nil end
+	return x, y
+end
+
+-- The position of the cursor on the map. Nil if the cursor is not on the map.
+local function CursorXY()
+	local canvas = WorldMapFrame.ScrollContainer
+	if not canvas or not canvas.GetNormalizedCursorPosition or not canvas:IsMouseOver() then return nil end
+	local x, y = canvas:GetNormalizedCursorPosition()
+	if not x or not y or x < 0 or x > 1 or y < 0 or y > 1 then return nil end
+	return x, y
+end
+
+local function CoordsText()
+	local px, py = PlayerXY(WorldMapFrame:GetMapID())
+	local cx, cy = CursorXY()
+	local text = "You: " .. (px and Pair(px, py) or "--")
+	if cx then text = text .. "    Cursor: " .. Pair(cx, cy) end
+	return text
+end
+
+local function RefreshCoords()
+	if not coords then return end
+	if ns.db.coords == false then
+		coords:Hide()
+		return
+	end
+	coords:Show()
+	local ok, text = pcall(CoordsText)
+	if not ok then
+		if ns.db.debug and not coords.failed then ns.Print("coordinates error: " .. tostring(text)) end
+		coords.failed = true
+		text = ""
+	end
+	if text ~= coords.last then
+		coords.last = text
+		coords.text:SetText(text)
+		coords:SetWidth(math.max(40, coords.text:GetStringWidth() + 12))
+		coords.bg:SetShown(text ~= "")
+	end
+end
+
+function ns.SetCoords(arg)
+	if arg == "on" or arg == "off" then
+		ns.db.coords = (arg == "on")
+	else
+		ns.db.coords = (ns.db.coords == false)
+	end
+	ns.Print(ns.db.coords and "the coordinates show on the map." or "the coordinates are hidden.")
+	RefreshCoords()
+end
+
+local function BuildCoords(host)
+	coords = CreateFrame("Frame", "ForeverMapExplorerCoords", WorldMapFrame)
+	coords:SetFrameStrata("HIGH")
+	coords:SetSize(40, 18)
+	coords:EnableMouse(false)
+	coords.host = host
+	coords.bg = coords:CreateTexture(nil, "BACKGROUND")
+	coords.bg:SetAllPoints()
+	coords.bg:SetColorTexture(0, 0, 0, 0.55)
+	coords.text = coords:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	PlaceCoords()
+	-- The frame is a child of the world map, thus the update runs only
+	-- while the map shows. Ten updates each second are sufficient.
+	-- The timer is a different frame, because the line can be hidden.
+	local timer = CreateFrame("Frame", nil, WorldMapFrame)
+	local wait = 0
+	timer:SetScript("OnUpdate", function(_, elapsed)
+		wait = wait + elapsed
+		if wait < 0.1 then return end
+		wait = 0
+		RefreshCoords()
+	end)
+	RefreshCoords()
 end
 
 local function BuildMapParts()
@@ -182,6 +289,8 @@ local function BuildMapParts()
 	panel.host = host
 	ns.PlacePanel()
 	panel:Hide()
+
+	pcall(BuildCoords, host)
 
 	WorldMapFrame:HookScript("OnShow", SafeRefreshPanel)
 	hooksecurefunc(WorldMapFrame, "OnMapChanged", SafeRefreshPanel)

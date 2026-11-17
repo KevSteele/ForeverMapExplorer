@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.0
+
+- New: a coordinates line on the world map. It shows your position and the position of the cursor.
+- The line is in the bottom left corner of the map. If the progress box is there, the line goes to the bottom right corner.
+- `/fme coords` shows or hides the line.
+
 ## 0.3.0 (2026-11-14)
 
 - First version in a repository. The earlier name was Map Fog.

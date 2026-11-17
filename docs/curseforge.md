@@ -39,6 +39,7 @@ Map Explorer helps you to discover each area of each zone in WoW Forever. It doe
 | `/fme mode art` and `/fme mode shade` | Shows the art of the area, or only its shape. |
 | `/fme box <position>` | Moves the box on the map: `bottom`, `top`, `topleft`, `topright`, `bottomleft`, `bottomright`. |
 | `/fme box off` and `/fme box on` | Hides or shows the box on the map. |
+| `/fme coords` (`on`, `off`) | Hides or shows the coordinates on the world map. |
 | `/fme minimap` | Hides or shows the minimap button. |
 
 ## Good to know

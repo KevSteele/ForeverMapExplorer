@@ -207,6 +207,9 @@ SlashCmdList.MAPFOG = function(msg)
 	elseif cmd == "box" then
 		if ns.PlacePanel then ns.PlacePanel(arg ~= "" and arg or "?") end
 		return
+	elseif cmd == "coords" then
+		if ns.SetCoords then ns.SetCoords(arg) end
+		return
 	elseif cmd == "minimap" then
 		if ns.ToggleMinimapButton then ns.ToggleMinimapButton() end
 		return
@@ -219,7 +222,7 @@ SlashCmdList.MAPFOG = function(msg)
 		Print(("map %s, art %s, data %s, tiles in use %d."):format(tostring(mapID), tostring(artID),
 			(artID and VeilmapFogData and VeilmapFogData[artID]) and "yes" or "no", used))
 	else
-		Print("/fme on | off | dim <0-100> | mode shade | mode art | progress | box <position> | minimap | status | debug")
+		Print("/fme on | off | dim <0-100> | mode shade | mode art | progress | box <position> | coords | minimap | status | debug")
 		Print("dim: 0 is no tint, 100 is black. The value now is " .. db.dim .. ". The mode now is " .. db.mode .. ".")
 		return
 	end
