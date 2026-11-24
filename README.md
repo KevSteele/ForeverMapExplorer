@@ -16,16 +16,17 @@ You must still go into an area to discover it. The game gives the discovery expe
 | `/explore` or `/fme progress` | Opens the discovery progress window. |
 | `/fme coords` (`on`, `off`) | Shows or hides the coordinates on the world map. |
 | `/fme minimap` | Shows or hides the minimap button. |
+| `/fme areas` | Prints each area of the map and what the game says about it. |
 | `/fme status` | Prints the map, the art number, and the number of tiles in use. |
 | `/fme debug` | Prints errors to the chat. |
 
 ## The buttons
 
 - The minimap button: a left click opens or closes the progress window. Drag it to move it.
-- The world map button: a left click opens or closes the progress window. A right click shows or hides the fog.
+- The world map button: a left click opens or closes the progress window. A right click shows or hides the fog and the progress box together.
 - The progress box on the map shows the progress of the map that you look at: a zone, a continent, or Azeroth.
 - The coordinates line in the bottom left corner of the map shows your position and the position of the cursor.
-- No button changes the box. Use `/fme box off`, `/fme box on`, or `/fme box <position>` (`bottom`, `top`, `topleft`, `topright`, `bottomleft`, `bottomright`).
+- To hide only the box, use `/fme box off`, `/fme box on`, or `/fme box <position>` (`bottom`, `top`, `topleft`, `topright`, `bottomleft`, `bottomright`).
 
 ## The progress window
 

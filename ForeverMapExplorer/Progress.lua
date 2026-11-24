@@ -27,16 +27,10 @@ function ns.ZoneProgress(mapID)
 	if not areas or #areas == 0 then
 		return nil
 	end
-	local seen = {}
-	local explored = C_MapExplorationInfo.GetExploredMapTextures(mapID)
-	if explored then
-		for _, info in ipairs(explored) do
-			seen[info.offsetX .. ":" .. info.offsetY .. ":" .. info.textureWidth .. ":" .. info.textureHeight] = true
-		end
-	end
+	local state = ns.Explored(mapID)
 	local done, missing, all = 0, {}, {}
 	for _, entry in ipairs(areas) do
-		local found = seen[entry[3] .. ":" .. entry[4] .. ":" .. entry[1] .. ":" .. entry[2]] or false
+		local found = ns.IsDiscovered(entry, state)
 		if found then
 			done = done + 1
 		else

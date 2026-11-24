@@ -27,18 +27,18 @@ Map Explorer helps you to discover each area of each zone in WoW Forever. It doe
 | Button | Left click | Right click |
 |---|---|---|
 | Minimap button | Opens or closes the progress window | Nothing |
-| World map button | Opens or closes the progress window | Shows or hides the fog |
+| World map button | Opens or closes the progress window | Shows or hides the fog and the progress box |
 
 ## Commands
 
 | Command | Function |
 |---|---|
 | `/explore` | Opens or closes the progress window. |
-| `/fme on` and `/fme off` | Shows or hides the fog. |
+| `/fme on` and `/fme off` | Shows or hides the fog and the progress box. |
 | `/fme dim <0-100>` | Sets how dark the fog is. |
 | `/fme mode art` and `/fme mode shade` | Shows the art of the area, or only its shape. |
 | `/fme box <position>` | Moves the box on the map: `bottom`, `top`, `topleft`, `topright`, `bottomleft`, `bottomright`. |
-| `/fme box off` and `/fme box on` | Hides or shows the box on the map. |
+| `/fme box off` and `/fme box on` | Hides or shows only the box on the map. |
 | `/fme coords` (`on`, `off`) | Hides or shows the coordinates on the world map. |
 | `/fme minimap` | Hides or shows the minimap button. |
 

@@ -1,7 +1,11 @@
 # Changelog
 
-## 0.4.0
+## 0.4.0 (2026-11-24)
 
+- Correction: an area showed as not discovered when its map art belongs to two areas and you discovered only one of them. Example: Drygulch Ravine in Durotar, which shares its art with Razorwind Canyon. The addon now also reads the area list of the game.
+- A right click on the world map button now shows or hides the fog and the progress box together. `/fme on` and `/fme off` do the same.
+- `/fme box off` still hides only the box.
+- New: `/fme areas` prints each area of the map and what the game says about it, for a problem report.
 - New: a coordinates line on the world map. It shows your position and the position of the cursor.
 - The line is in the bottom left corner of the map. If the progress box is there, the line goes to the bottom right corner.
 - `/fme coords` shows or hides the line.

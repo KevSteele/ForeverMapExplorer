@@ -4,7 +4,7 @@ GPL-3.0-or-later.
 
 - The minimap button: a left click opens and closes the progress window.
 - The world map button: a left click opens and closes the progress window,
-  a right click shows and hides the fog on the map.
+  a right click shows and hides the fog and the progress box on the map.
 - The map panel shows the progress of the map that you look at:
   a zone, a continent, or Azeroth.
 - The coordinates line on the world map shows your position and the
@@ -79,7 +79,8 @@ end
 
 local function RefreshPanel()
 	if not panel then return end
-	if not ns.db.mapPanel or not WorldMapFrame:IsShown() then
+	-- The box goes with the fog: the right click on the map button hides both.
+	if not ns.db.mapPanel or not ns.db.enabled or not WorldMapFrame:IsShown() then
 		panel:Hide()
 		return
 	end
@@ -268,6 +269,7 @@ local function BuildMapParts()
 		end
 		ns.db.enabled = not ns.db.enabled
 		ns.RefreshFog()
+		SafeRefreshPanel()
 		UpdateMapButton()
 		if GameTooltip:IsOwned(self) then self:GetScript("OnEnter")(self) end
 	end)
@@ -275,8 +277,8 @@ local function BuildMapParts()
 		GameTooltip:SetOwner(self, "ANCHOR_LEFT")
 		GameTooltip:AddLine("Map Explorer", 1, 1, 1)
 		GameTooltip:AddLine("Left-click: open or close the progress window.", 0.8, 0.8, 0.8)
-		GameTooltip:AddLine(ns.db.enabled and "Right-click: hide the fog on the map."
-			or "Right-click: show the fog on the map.", 0.8, 0.8, 0.8)
+		GameTooltip:AddLine(ns.db.enabled and "Right-click: hide the fog and the progress box."
+			or "Right-click: show the fog and the progress box.", 0.8, 0.8, 0.8)
 		GameTooltip:Show()
 	end)
 

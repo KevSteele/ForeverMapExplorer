@@ -34,6 +34,45 @@ local function FileSize(n)
 	return size
 end
 
+-- What the game says that you discovered on a map: the art (by position and
+-- size) and the area IDs. The art list alone is not sufficient. Some art
+-- belongs to two areas (in Durotar: Drygulch Ravine and Razorwind Canyon), and
+-- the game then can keep the art hidden when you discovered only one of them.
+function ns.Explored(mapID)
+	local state = { textures = {}, areas = {}, hasAreas = false }
+	local ok, explored = pcall(C_MapExplorationInfo.GetExploredMapTextures, mapID)
+	if ok and type(explored) == "table" then
+		for _, info in ipairs(explored) do
+			state.textures[info.offsetX .. ":" .. info.offsetY .. ":" .. info.textureWidth .. ":" .. info.textureHeight] = true
+		end
+	end
+	local getAreas = C_MapExplorationInfo.GetExploredAreaIDs
+	if getAreas then
+		local ok2, ids = pcall(getAreas, mapID)
+		if ok2 and type(ids) == "table" then
+			state.hasAreas = true
+			for _, id in ipairs(ids) do
+				state.areas[id] = true
+			end
+		end
+	end
+	return state
+end
+
+-- True if you discovered the area of a data entry. The second result tells
+-- the source: "art" or "area".
+function ns.IsDiscovered(entry, state)
+	if state.textures[entry[3] .. ":" .. entry[4] .. ":" .. entry[1] .. ":" .. entry[2]] then
+		return true, "art"
+	end
+	for _, id in ipairs(entry[5] or {}) do
+		if state.areas[id] then
+			return true, "area"
+		end
+	end
+	return false
+end
+
 local function Canvas()
 	local container = WorldMapFrame and WorldMapFrame.ScrollContainer
 	return container and container.Child
@@ -117,14 +156,7 @@ local function Refresh()
 		return
 	end
 
-	-- The areas that the game shows. The position and the size identify an area.
-	local seen = {}
-	local explored = C_MapExplorationInfo.GetExploredMapTextures(mapID)
-	if explored then
-		for _, info in ipairs(explored) do
-			seen[info.offsetX .. ":" .. info.offsetY .. ":" .. info.textureWidth .. ":" .. info.textureHeight] = true
-		end
-	end
+	local state = ns.Explored(mapID)
 
 	local layers = C_Map.GetMapArtLayers(mapID)
 	local layer = layers and layers[1]
@@ -133,7 +165,7 @@ local function Refresh()
 	local shade = 1 - db.dim / 100
 
 	for _, entry in ipairs(areas) do
-		if not seen[entry[3] .. ":" .. entry[4] .. ":" .. entry[1] .. ":" .. entry[2]] then
+		if not ns.IsDiscovered(entry, state) then
 			DrawArea(entry, tileW, tileH, shade)
 		end
 	end
@@ -216,16 +248,39 @@ SlashCmdList.MAPFOG = function(msg)
 	elseif cmd == "debug" then
 		db.debug = not db.debug
 		Print("debug is " .. (db.debug and "on." or "off."))
+	elseif cmd == "areas" then
+		-- For a problem report: each area of the map and what the game says.
+		local mapID = WorldMapFrame:GetMapID()
+		local artID = mapID and C_Map.GetMapArtID(mapID)
+		local areas = artID and VeilmapFogData and VeilmapFogData[artID]
+		if not areas then
+			Print("this map has no area data. Open the map of a zone first.")
+			return
+		end
+		local state = ns.Explored(mapID)
+		Print(("map %s, art %s. The area list of the game is %s."):format(tostring(mapID), tostring(artID),
+			state.hasAreas and "available" or "not available"))
+		for _, entry in ipairs(areas) do
+			local names = {}
+			for _, id in ipairs(entry[5] or {}) do
+				names[#names + 1] = (C_Map.GetAreaInfo(id) or "?") .. " (" .. id .. (state.areas[id] and ", yes)" or ", no)")
+			end
+			local found, how = ns.IsDiscovered(entry, state)
+			Print(("  %s: %s"):format(table.concat(names, " + "),
+				found and ("discovered, from the " .. how) or "not discovered"))
+		end
+		return
 	elseif cmd == "status" then
 		local mapID = WorldMapFrame:GetMapID()
 		local artID = mapID and C_Map.GetMapArtID(mapID)
 		Print(("map %s, art %s, data %s, tiles in use %d."):format(tostring(mapID), tostring(artID),
 			(artID and VeilmapFogData and VeilmapFogData[artID]) and "yes" or "no", used))
 	else
-		Print("/fme on | off | dim <0-100> | mode shade | mode art | progress | box <position> | coords | minimap | status | debug")
+		Print("/fme on | off | dim <0-100> | mode shade | mode art | progress | box <position> | coords | minimap | areas | status | debug")
 		Print("dim: 0 is no tint, 100 is black. The value now is " .. db.dim .. ". The mode now is " .. db.mode .. ".")
 		return
 	end
 	SafeRefresh()
 	if ns.UpdateMapButton then ns.UpdateMapButton() end
+	if ns.RefreshPanel then ns.RefreshPanel() end
 end
