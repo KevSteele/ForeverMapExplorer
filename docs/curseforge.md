@@ -9,7 +9,7 @@ See the areas that you did not discover on the world map, and follow your discov
 
 ## What it does
 
-Map Explorer helps you to discover each area of each zone in WoW Forever. It does three things and nothing more.
+Map Explorer helps you to discover each area of each zone in WoW Forever. It does four things and nothing more.
 
 **1. Fog on the world map.** Each area that you did not discover shows as a dark shape on the map. The edge of the shape is the edge of the area, so you see where to go. You must still go there: the game gives the discovery and its experience as usual.
 
@@ -21,6 +21,8 @@ Map Explorer helps you to discover each area of each zone in WoW Forever. It doe
 - The "Map" button of a plate opens the world map on that zone.
 
 **3. A progress box on the map.** It shows the progress of the map that you look at: a zone, a continent, or Azeroth.
+
+**4. A coordinates line on the map.** It shows your position and the position of the cursor.
 
 ## Buttons
 
@@ -41,11 +43,12 @@ Map Explorer helps you to discover each area of each zone in WoW Forever. It doe
 | `/fme box off` and `/fme box on` | Hides or shows only the box on the map. |
 | `/fme coords` (`on`, `off`) | Hides or shows the coordinates on the world map. |
 | `/fme minimap` | Hides or shows the minimap button. |
+| `/fme areas` | Prints each area of the map and what the game says about it. Use it for a problem report. |
 
 ## Good to know
 
 - The progress is for the character that you play. The numbers come from the game.
-- The addon has no map scale, no coordinates, and no icons. It does not change the map frame.
+- The addon has no map scale and no icons. It does not change the map frame.
 - Cities are not in the list.
 - The addon counts the areas of the map art. For some zones, this count can be different from the list of the Legacy Challenges view.
 - A zone that you complete while the addon runs gets the date of that day. The addon cannot know the date of an earlier completion.
@@ -54,6 +57,8 @@ Map Explorer helps you to discover each area of each zone in WoW Forever. It doe
 
 The area data comes from [Veilmap](https://www.curseforge.com/wow/addons/veilmap) by xElementzx, licence GPL-3.0-or-later. Thus this addon has the same licence. The package contains the full source and the licence text.
 
-## Feedback
+## Source and feedback
+
+The source is on GitHub: https://github.com/KevSteele/ForeverMapExplorer. Pull requests are welcome.
 
 Tell me about errors in the comments. Include the zone and what you see.
